@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>¿Quién soy? | Sembrando Futuro</title>
+<style>
+:root{--green:#789879;--dark:#385b43;--mint:#e8f1e5;--cream:#fbf6e9;--pink:#f4e2dc;--yellow:#f5edcf}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:Trebuchet MS,Arial,sans-serif;color:var(--dark);background:linear-gradient(135deg,#edf4e9,#fbf6e9);display:flex;align-items:center;justify-content:center;padding:22px}
+main{width:min(760px,100%);background:#fffdf7;border:2px solid #dce8d8;border-radius:28px;padding:clamp(22px,5vw,44px);box-shadow:0 14px 40px #526b4b20;text-align:center}
+.leaf{font-size:42px}.tag{letter-spacing:3px;font-size:12px;font-weight:bold;color:#819b7c;margin:8px 0}
+h1{font-size:clamp(32px,6vw,48px);margin:8px 0;color:#496d50}
+.subtitle{font-size:17px;line-height:1.6;color:#71816d;max-width:530px;margin:0 auto 24px}
+.card{background:var(--mint);border-radius:22px;padding:25px;margin:20px 0}
+.progress{height:9px;background:#e5e9dc;border-radius:20px;overflow:hidden;margin:10px 0 20px}
+#bar{height:100%;width:0;background:#91ad88;transition:width .3s}
+.counter{font-size:13px;color:#7d9077;font-weight:bold}
+.riddle{font-size:clamp(20px,4vw,26px);line-height:1.5;font-weight:bold;margin:16px auto;max-width:570px}
+.answers{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:22px}
+button{font:inherit;cursor:pointer;border:2px solid #d6e4d1;border-radius:15px;padding:14px 12px;background:#fffdf7;color:#496d50;font-weight:bold;transition:.15s}
+button:hover{transform:translateY(-2px);background:#f4f8f0;border-color:#9db69a}
+button:disabled{cursor:default;opacity:.8;transform:none}
+#feedback{min-height:28px;font-weight:bold;margin:18px 0 6px}
+.primary{background:#789879;color:white;border:0;padding:15px 28px;margin-top:12px}
+.primary:hover{background:#648365}
+.hidden{display:none}
+footer{font-size:12px;color:#91a18a;margin-top:24px}
+@media(max-width:520px){.answers{grid-template-columns:1fr}main{padding:22px 17px}}
+</style>
+</head>
+<body>
+<main>
+  <div class="leaf">🌱🌼🥕</div>
+  <div class="tag">CAMPAÑA ESCOLAR</div>
+  <h1>¿Quién soy?</h1>
+  <p class="subtitle">Descubre los secretos de la huerta. Lee cada pista, elige la respuesta correcta y demuestra cuánto sabes sobre la naturaleza.</p>
+  <section id="start">
+    <div class="card">
+      <div style="font-size:46px">🌻</div>
+      <h2>¡Bienvenido al reto!</h2>
+      <p>Son 10 adivinanzas. ¡Cada respuesta correcta te acerca a un futuro más verde!</p>
+    </div>
+    <button class="primary" onclick="begin()">¡Comenzar! 🌿</button>
+  </section>
+  <section id="game" class="hidden">
+    <div class="counter" id="counter">PREGUNTA 1 DE 10</div>
+    <div class="progress"><div id="bar"></div></div>
+    <div class="card">
+      <div style="font-size:38px" id="emoji">🌿</div>
+      <div class="riddle" id="riddle"></div>
+    </div>
+    <div class="answers" id="answers"></div>
+    <div id="feedback" aria-live="polite"></div>
+    <button id="next" class="primary hidden" onclick="nextQuestion()">Siguiente pista →</button>
+  </section>
+  <section id="end" class="hidden">
+    <div class="card">
+      <div style="font-size:55px">🏆🌷</div>
+      <h2>¡Reto completado!</h2>
+      <p id="score" style="font-size:22px;font-weight:bold"></p>
+      <p id="message"></p>
+    </div>
+    <button class="primary" onclick="restart()">Volver a jugar ↻</button>
+  </section>
+  <footer>SEMbrando Futuro · Cuidar la naturaleza comienza con pequeños aprendizajes 🌿</footer>
+</main>
+<script>
+const questions=[
+{e:"🌿",q:"Soy de color naranja, crezco bajo la tierra y tengo hojas verdes. ¿Quién soy?",a:["Tomate","Zanahoria","Lechuga"],c:1},
+{e:"🌿",q:"Soy rojo, jugoso y tengo pequeñas semillas en mi interior. ¿Quién soy?",a:["Tomate","Pepino","Maíz"],c:0},
+{e:"🌿",q:"Tengo muchas hojas verdes y soy protagonista de las ensaladas. ¿Quién soy?",a:["Zanahoria","Fresa","Lechuga"],c:2},
+{e:"🌿",q:"Soy pequeña, puedo tener diferentes formas y, con agua y cuidados, puedo convertirme en una planta. ¿Quién soy?",a:["Semilla","Pala","Flor"],c:0},
+{e:"🌿",q:"Caigo de las nubes y soy necesaria para que las plantas puedan crecer. ¿Quién soy?",a:["Arena","Agua","Viento"],c:1},
+{e:"🌿",q:"Vuelo de flor en flor y ayudo a transportar el polen. ¿Quién soy?",a:["Mariposa nocturna","Hormiga","Abeja"],c:2},
+{e:"🌿",q:"Soy verde, alargado y tengo semillas en mi interior. ¿Quién soy?",a:["Pepino","Papa","Cebolla"],c:0},
+{e:"🌿",q:"Estoy hecho de residuos orgánicos descompuestos y puedo enriquecer la tierra. ¿Quién soy?",a:["Plástico","Compost","Vidrio"],c:1},
+{e:"🌿",q:"Soy una planta alta, tengo granos amarillos organizados en una mazorca. ¿Quién soy?",a:["Maíz","Lechuga","Rábano"],c:0},
+{e:"🌿",q:"Tengo un recipiente y una boquilla por donde sale el agua para regar las plantas. ¿Quién soy?",a:["Rastrillo","Guantes","Regadera"],c:2}
+];
+let index=0,score=0,locked=false;
+function begin(){document.getElementById('start').classList.add('hidden');document.getElementById('game').classList.remove('hidden');showQuestion()}
+function showQuestion(){
+ locked=false;let x=questions[index];
+ document.getElementById('counter').textContent=`PREGUNTA ${index+1} DE ${questions.length}`;
+ document.getElementById('bar').style.width=`${index/questions.length*100}%`;
+ document.getElementById('emoji').textContent=x.e;document.getElementById('riddle').textContent=x.q;
+ document.getElementById('feedback').textContent='';document.getElementById('next').classList.add('hidden');
+ let area=document.getElementById('answers');area.innerHTML='';
+ x.a.forEach((a,i)=>{let b=document.createElement('button');b.textContent=a;b.onclick=()=>choose(i,b);area.appendChild(b)});
+}
+function choose(i,btn){
+ if(locked)return;locked=true;let x=questions[index];let buttons=[...document.querySelectorAll('#answers button')];
+ buttons.forEach(b=>b.disabled=true);
+ if(i===x.c){score++;btn.style.background='#e2f0df';btn.style.borderColor='#80a77c';document.getElementById('feedback').textContent='¡Muy bien! 🌟 Esa es la respuesta correcta.'}
+ else{btn.style.background='#f7e7e1';btn.style.borderColor='#d8a99a';buttons[x.c].style.background='#e2f0df';buttons[x.c].style.borderColor='#80a77c';document.getElementById('feedback').textContent=`¡Buen intento! La respuesta era: ${x.a[x.c]}.`}
+ document.getElementById('bar').style.width=`${(index+1)/questions.length*100}%`;
+ document.getElementById('next').textContent=index===questions.length-1?'Ver resultado 🏆':'Siguiente pista →';
+ document.getElementById('next').classList.remove('hidden');
+}
+function nextQuestion(){index++;if(index<questions.length)showQuestion();else finish()}
+function finish(){
+ document.getElementById('game').classList.add('hidden');document.getElementById('end').classList.remove('hidden');
+ document.getElementById('score').textContent=`Obtuviste ${score} de ${questions.length} respuestas correctas.`;
+ document.getElementById('message').textContent=score===10?'¡Increíble! Eres una persona experta en los secretos de la huerta.':score>=7?'¡Excelente trabajo! Sabes mucho sobre la naturaleza.':'¡Buen trabajo! Sigue aprendiendo y cuidando nuestro planeta.';
+}
+function restart(){index=0;score=0;document.getElementById('end').classList.add('hidden');document.getElementById('game').classList.remove('hidden');showQuestion()}
+</script>
+</body>
+</html>
